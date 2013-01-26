@@ -2,7 +2,7 @@
 
 from manip import Manipulate 
 
-dir = "/Users/chuy08/Pictures"
+dir = "/Users/jorosco/Pictures"
 
 m = Manipulate()
 m.rename_files(dir)
