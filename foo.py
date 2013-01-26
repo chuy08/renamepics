@@ -5,4 +5,4 @@ from manip import Manipulate
 dir = "/Users/chuy08/Pictures"
 
 m = Manipulate()
-m.echo()
+m.rename_files(dir)
