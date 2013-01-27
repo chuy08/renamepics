@@ -8,26 +8,23 @@ import exiftool
 
 from pprint import pformat
 
-class Manipulate():
+logging.basicConfig(filename='/tmp/testtest.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)-8s %(message)s')
 
-   def __init__(self):
-      self.logger = self.set_logging() 
+class Manipulate():
 
    def echo(self):
       print self.username
 
-   def set_logging(self):
-      logger = logging.getLogger('myapp')
-      hdlr = logging.FileHandler('/tmp/testtest.log')
-      logger.setLevel(logging.WARNING)
-      logger.info("Works?")
-
    def get_files(self, dir):
+      logging.info("Found %s files to process", len(dir))
       files = []
       filesDir = os.listdir(dir)
       for file in filesDir:
          if re.match(r"\w+\.", file):
             files.append(dir + "/" + file)
+            logging.info("File processed: %s", file)
       return files
 
    def get_metaData(self, dir):
@@ -41,5 +38,4 @@ class Manipulate():
    def rename_files(self, dir):
       metadata = self.get_metaData(dir)
       for k in metadata:
-#         self.logger.info(k["File:MIMEType"])
-         print k["File:MIMEType"]
+         logging.info("MIME Type : %s", k["File:MIMEType"])
