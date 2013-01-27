@@ -18,6 +18,7 @@ class Manipulate():
       print self.username
 
    def get_files(self, dir):
+      logging.info("#### Start of rename job ####")
       logging.info("Found %s files to process", len(dir))
       files = []
       filesDir = os.listdir(dir)
@@ -25,6 +26,8 @@ class Manipulate():
          if re.match(r"\w+\.", file):
             files.append(dir + "/" + file)
             logging.info("File processed: %s", file)
+         else:
+            logging.warning("We omit this: %s", file)
       return files
 
    def get_metaData(self, dir):
@@ -39,3 +42,4 @@ class Manipulate():
       metadata = self.get_metaData(dir)
       for k in metadata:
          logging.info("MIME Type : %s", k["File:MIMEType"])
+      logging.info("#### End Job ####")
