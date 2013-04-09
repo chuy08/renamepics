@@ -38,8 +38,28 @@ class Manipulate():
       et.terminate()
       return metadata
 
+   def file_type(self, file):
+      if ( file["File:MIMEType"] == "image/jpeg" ):
+         if ( "EXIF:ModifyDate" in file ):
+#            print "Yes"
+            print file["File:FileName"]
+            print file["EXIF:ModifyDate"]
+            print "\n"
+         else:
+            logging.info("Doesn't have ModifyDate Tag : %s", file["SourceFile"])
+
+#         print file["SourceFile"] 
+#         print pformat(file)
+#          print file["File:FileName"]
+#          print file["EXIF:ModifyDate"]
+#          print "\n"
+      else:
+         logging.info("I don't know what to do with this : %s", file["SourceFile"])
+
    def rename_files(self, dir):
       metadata = self.get_metaData(dir)
-      for k in metadata:
-         logging.info("MIME Type : %s", k["File:MIMEType"])
+      for file in metadata:
+#         print pformat(file)
+#         logging.info("MIME Type : %s", file["File:MIMEType"])
+         self.file_type(file)
       logging.info("#### End Job ####")
