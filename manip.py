@@ -41,10 +41,10 @@ class Manipulate():
    def file_type(self, file):
       if ( file["File:MIMEType"] == "image/jpeg" ):
          if ( "EXIF:ModifyDate" in file ):
-#            print "Yes"
-            print file["File:FileName"]
-            print file["EXIF:ModifyDate"]
-            print "\n"
+#            print file["File:FileName"]
+            date = file["EXIF:ModifyDate"].split(" ")
+            ymd = date[0].split(":")
+            print pformat(ymd)
          else:
             logging.info("Doesn't have ModifyDate Tag : %s", file["SourceFile"])
 
