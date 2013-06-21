@@ -49,18 +49,6 @@ def getMetaData(files):
    et.terminate()
    return metadata
 
-def createOutputDir(directory, out, args):
-   directory = directory + "/" + out
-   if os.path.exists(directory):
-      logging.info("Output directory exists %s", directory )
-      print "Do something with the output directory"
-      exit(1)
- 
-   else:
-      logging.info("Output directory doesn't exists, creating %s", directory)
-#      if args.create:
-#         os.makedirs(directory)
-
 def newDirName(date):
    date = date.replace(' ', ':')
    split = date.split(":")
@@ -98,8 +86,6 @@ afile = absFileName(onlyfiles)
 
 metadata = getMetaData(afile)
 
-#createOutputDir(directory, outDir, args)
-
 i = 1 
 for each in metadata:
    if 'ExifTool:Error' in each:
@@ -112,8 +98,9 @@ for each in metadata:
          shutil.copy(each["SourceFile"], backup)
       i += 1
 
-   elif 'EXIF:CreateDate' in each:
-      newdir = newDirName(each["EXIF:CreateDate"])
+   elif 'EXIF:DateTimeOriginal' in each:
+#   elif 'EXIF:CreateDate' in each:
+      newdir = newDirName(each["EXIF:DateTimeOriginal"])
       createDir(newdir, args)
       copyFile(newdir, each, args)
       i += 1
