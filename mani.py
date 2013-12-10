@@ -7,6 +7,7 @@ import logging.config
 import os
 import pytz
 import shutil
+import sys
 import time
 
 from exiftool     import ExifTool
@@ -14,7 +15,7 @@ from minify_json  import json_minify
 from pprint       import pprint
 
 CONFFILE = 'params.conf'
-LOGNAME = 'zabbPkl'
+LOGNAME = 'manip'
 
 class fileManipulation():
 
@@ -47,6 +48,10 @@ class fileManipulation():
 
    def files( self ):
       f = []
+      if not os.path.exists( self.rootdir ):
+         print "Root dir doesn't seem to be vaild"
+         sys.exit( 1 )
+
       for dir in os.walk( self.rootdir ):
          for fileName in dir[2]:
             f.append( os.path.join( dir[0], fileName ) )
@@ -66,12 +71,18 @@ class fileManipulation():
    def copyFile( self, files ):
       for one in files:
          origfile = os.path.join( one["sourcePath"], one["origFileName"] )
-#         newfile = os.path.join( one["newFilePath"], one["newFileName"] )
-#         print origfile, one["newFilePath"]
-         try:
-            shutil.copy( origfile, one["newFilePath"] )
-         except:
-            self.logger.info( "Copy failed for: %s" % ( origfile ))
+         # Checking if were gonna do a rename or just copy
+         if self.conf["rename"]:
+            newfile = ( os.path.join( one["newFilePath"], one["newFileName"] )) 
+            try:
+               shutil.copy2( origfile, newfile )
+            except:
+               self.logger.info( "Copy failed for: %s" % ( origfile ))
+         else:
+            try:
+               shutil.copy2( origfile, one["newFilePath"] )
+            except:
+               self.logger.info( "Copy failed for: %s" % ( origfile ))
 
    def yahoo( self, data ):
       self.createOutDirs( data )
