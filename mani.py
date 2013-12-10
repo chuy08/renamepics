@@ -70,6 +70,7 @@ class fileManipulation():
 
    def copyFile( self, files ):
       for one in files:
+#         print type( one["sourcePath"] ), one["sourcePath"], type( one["origFileName"]), one["origFileName"]
          origfile = os.path.join( one["sourcePath"], one["origFileName"] )
          # Checking if were gonna do a rename or just copy
          if self.conf["rename"]:
@@ -105,9 +106,12 @@ class fileManipulation():
 #            print one["File:FileType"]
             self.logger.info( "Don't know what to do with %s" % ( one["File:FileType"] ))
 
-      j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
-      mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
-      m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
+      if len( jpeg ) > 0:
+         j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
+      if len( mp4 ) > 0:
+         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
+      if len( m2ts ) > 0:
+         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
       
 
 class fileManipulation_m2ts( fileManipulation ):
@@ -144,7 +148,7 @@ class fileManipulation_m2ts( fileManipulation ):
       for one in meta:
          if "File:FileModifyDate" in one:
             d = { "sourcePath" : one["File:Directory"]
-                 ,"origFileName" : one["File:FileName"]
+                 ,"origFileName" : unicode( one["File:FileName"] )
                  ,"year" : self.retPart( one["File:FileModifyDate"], 0 ) 
                  ,"month" : self.retPart( one["File:FileModifyDate"], 1 ) 
                  ,"day" : self.retPart( one["File:FileModifyDate"], 2 )
@@ -174,6 +178,11 @@ class fileManipulation_mp4( fileManipulation ):
 
    def adjustUTC2Local( self, date ):
       # Quicktime encodes create date as UTC 
+      splitDate = date.split( ":" )
+#      print type( splitDate[0] )
+      if int( splitDate[0] ) == 0000:
+         date = ( "1970:01:01 00:00:00" )
+
       timeZone = pytz.timezone( self.conf["timeZone"] )
       dtformat = '%Y:%m:%d %H:%M:%S'
       t = datetime.datetime.strptime( date, dtformat).replace(tzinfo=pytz.utc)
@@ -194,7 +203,7 @@ class fileManipulation_mp4( fileManipulation ):
       for one in meta:
          if "QuickTime:CreateDate" in one:
             d = { "sourcePath" : one["File:Directory"]
-                 ,"origFileName" : one["File:FileName"]
+                 ,"origFileName" : unicode( one["File:FileName"] )
                  ,"year" : self.retPart( one["QuickTime:CreateDate"], '%Y' ) 
                  ,"month" : self.retPart( one["QuickTime:CreateDate"], '%m' ) 
                  ,"day" : self.retPart( one["QuickTime:CreateDate"], '%d' )
@@ -235,7 +244,7 @@ class fileManipulation_jpeg( fileManipulation ):
       for one in meta:
          if "EXIF:CreateDate" in one:
             d = { "sourcePath" : one["File:Directory"]
-                 ,"origFileName" : one["File:FileName"]
+                 ,"origFileName" : unicode( one["File:FileName"] )
                  ,"year" : self.retPart( one["EXIF:CreateDate"], 0 ) 
                  ,"month" : self.retPart( one["EXIF:CreateDate"], 1 ) 
                  ,"day" : self.retPart( one["EXIF:CreateDate"], 2 )
