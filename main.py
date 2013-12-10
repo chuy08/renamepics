@@ -29,6 +29,7 @@ def main():
                       )
    args=parser.parse_args()
    rootdir = args.directory
+   CONFFILE = args.conf
 
    # Loading config file
    json_data = open( CONFFILE )
