@@ -10,8 +10,8 @@ import shutil
 import sys
 import time
 
-from exiftool     import ExifTool
-from minify_json  import json_minify
+from lib/exiftool     import ExifTool
+from lib/minify_json  import json_minify
 from pprint       import pprint
 
 CONFFILE = 'params.conf'
