@@ -102,9 +102,11 @@ class fileManipulation():
       self.copyFile( data )
 
    def identifyType( self, meta ):
+#      pprint( meta )
       jpeg = []
       mp4 = []
       m2ts = []
+      png = []
       for one in meta:
 #         print one["File:FileType"]
          if one["File:FileType"] == "JPEG":
@@ -113,21 +115,26 @@ class fileManipulation():
             mp4.append( one )
          elif one["File:FileType"] == "M2TS":
             m2ts.append( one )
+         elif one["File:FileType"] == "PNG":
+            png.append( one )
    
          else:
 #            print one["File:FileType"]
             self.logger.info( "Don't know what to do with %s" % ( one["File:FileType"] ))
 
-      if len( jpeg ) > 0:
-         from fileManip_jpg      import fileManipulation_jpeg 
-         j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
+#      if len( jpeg ) > 0:
+#         from fileManip_jpg      import fileManipulation_jpeg 
+#         j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
 
-      if len( mp4 ) > 0:
-         from fileManip_mp4      import fileManipulation_mp4
-         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
+#      if len( mp4 ) > 0:
+#         from fileManip_mp4      import fileManipulation_mp4
+#         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
 
-      if len( m2ts ) > 0:
-         from fileManip_m2ts      import fileManipulation_m2ts 
-         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
+#      if len( m2ts ) > 0:
+#         from fileManip_m2ts      import fileManipulation_m2ts 
+#         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
       
+      if len( png ) > 0:
+         from fileManip_png      import fileManipulation_png
+         p = fileManipulation_png( png, self.conf, self.logName ) 
 
