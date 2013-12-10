@@ -1,6 +1,9 @@
 {
    "config" : {
+       // Where we put our processed files
        "outDir" : "output" 
+       // Where to put files can't be processed
+      ,"unknown" : "unknown"
       ,"rootDir" : "/Users/chuy08/work/python/renamePics2/party"
       // Quicktime uses UTC time, I convert it to the timezone listed here
       // For valid timezones lookup pytz python package

@@ -13,14 +13,15 @@ sys.path.append( './lib' )
 from fileManip    import fileManipulation
 from minify_json  import json_minify
 
-CONFFILE = 'params.conf.json'
+__CONFFILE = 'params.conf.json'
+
 LOGNAME = 'manip'
 
 def main():
 
    parser = argparse.ArgumentParser(description='File Manipulation')
    parser.add_argument( '-c', '--conf'
-                       ,default=CONFFILE
+                       ,default=__CONFFILE
                        ,help='default config file is params.conf.json'
                       )
    parser.add_argument( '-d', '--directory'
@@ -52,10 +53,12 @@ def main():
 
    logger = logging.getLogger(LOGNAME)
    logger.info( "Config file used: %s" % ( CONFFILE ))
+   logger.info( "Rootdir used: %s" % ( conf["rootDir"] ))
 
    fm = fileManipulation( conf, LOGNAME )
    fm.files()
    
+   logger.info( "Finished..." )
 
 
 

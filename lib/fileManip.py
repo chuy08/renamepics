@@ -17,6 +17,7 @@ class fileManipulation():
       self.conf = conf 
       self.outdir = self.conf["outDir"]
       self.rootdir = self.conf["rootDir"] 
+      self.unknown = self.conf["unknown"] 
       self.logName = logName
       self.logger = logging.getLogger(logName+".fileManipulation")
       self.logger.info("fileManipulation")
@@ -59,29 +60,43 @@ class fileManipulation():
 
    def createOutDirs( self, dir ):
       for one in dir:
-         newdirs = self.rootdir + "/" + self.outdir + "/" + one["year"] + "/" + one["month"] + "/" + one["day"]
+         newdirs = ''
+         if "unknown" in one:
+            newdirs = self.rootdir + "/" + self.outdir + "/" + self.unknown 
+         else:
+            newdirs = self.rootdir + "/" + self.outdir + "/" + one["year"] + "/" + one["month"] + "/" + one["day"]
+
          try:
             os.makedirs( newdirs )
          except:
             pass 
 
    def copyFile( self, files ):
+#      pprint( files)
       for one in files:
 #         print type( one["sourcePath"] ), one["sourcePath"], type( one["origFileName"]), one["origFileName"]
-         origfile = os.path.join( one["sourcePath"], one["origFileName"] )
-         # Checking if were gonna do a rename or just copy
-         if self.conf["rename"]:
-            newfile = ( os.path.join( one["newFilePath"], one["newFileName"] )) 
+         if "unknown" in one:
+            newdir = self.rootdir + "/" + self.outdir + "/" + self.unknown
             try:
-               shutil.copy2( origfile, newfile )
+               shutil.copy2( one["unknown"], newdir )
             except:
-               self.logger.info( "Copy failed for: %s" % ( origfile ))
-         else:
-            try:
-               shutil.copy2( origfile, one["newFilePath"] )
-            except:
-               self.logger.info( "Copy failed for: %s" % ( origfile ))
+               self.logger.info( "Copy failed for: %s" % ( one["unknown"] ))
 
+         else:
+            origfile = os.path.join( one["sourcePath"], one["origFileName"] )
+            # Checking if were gonna do a rename or just copy
+            if self.conf["rename"]:
+               newfile = ( os.path.join( one["newFilePath"], one["newFileName"] )) 
+               try:
+                  shutil.copy2( origfile, newfile )
+               except:
+                  self.logger.info( "Copy failed for: %s" % ( origfile ))
+            else:
+               try:
+                  shutil.copy2( origfile, one["newFilePath"] )
+               except:
+                  self.logger.info( "Copy failed for: %s" % ( origfile ))
+        
    def yahoo( self, data ):
       self.createOutDirs( data )
       self.copyFile( data )
@@ -107,12 +122,12 @@ class fileManipulation():
          from fileManip_jpg      import fileManipulation_jpeg 
          j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
 
-#      if len( mp4 ) > 0:
-#         from fileManip_mp4      import fileManipulation_mp4
-#         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
+      if len( mp4 ) > 0:
+         from fileManip_mp4      import fileManipulation_mp4
+         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
 
-#      if len( m2ts ) > 0:
-#         from fileManip_m2ts      import fileManipulation_m2ts 
-#         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
+      if len( m2ts ) > 0:
+         from fileManip_m2ts      import fileManipulation_m2ts 
+         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
       
 

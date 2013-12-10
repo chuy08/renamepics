@@ -46,8 +46,9 @@ class fileManipulation_mp4( fileManipulation ):
       return d
 
    def main( self, meta ):
-#      pprint( meta )
       a = []
+      good = 0
+      un = 0 
       for one in meta:
          if "QuickTime:CreateDate" in one:
             d = { "sourcePath" : one["File:Directory"]
@@ -59,9 +60,14 @@ class fileManipulation_mp4( fileManipulation ):
                  ,"newFileName" : self.buildNewFileName( one["QuickTime:CreateDate"] ) 
                 }
             a.append( d )
+            good += 1
          else:
-            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
+            print one
+            d = { "unknown" : one["SourceFile"] }
+            a.append( d )
+            un += 1
 
-#      print a
+      self.logger.info( "Found %s valid MP4's" % ( good ))
+      self.logger.info( "Found %s unknown MP4's" % ( un ))
       self.yahoo( a )
 

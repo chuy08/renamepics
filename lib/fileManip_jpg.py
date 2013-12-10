@@ -31,6 +31,8 @@ class fileManipulation_jpeg( fileManipulation ):
 
    def main( self, meta ):
       a = []
+      good = 0 
+      un = 0
       for one in meta:
          if "EXIF:CreateDate" in one:
             d = { "sourcePath" : one["File:Directory"]
@@ -42,8 +44,13 @@ class fileManipulation_jpeg( fileManipulation ):
                  ,"newFileName" : self.buildNewFileName( one ) 
                 }
             a.append( d )
+            good += 1
          else:
-            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
+            d = { "unknown" : one["SourceFile"] } 
+            a.append( d )
+            un += 1
 
+      self.logger.info( "Found %s valid JPEG's" % ( good ))
+      self.logger.info( "Found %s unknown JPEG's" % ( un ))
       self.yahoo( a )
 

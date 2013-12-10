@@ -29,7 +29,7 @@ class fileManipulation_m2ts( fileManipulation ):
    
    def buildNewFileName( self, date ):
       date = self.removeTZOffset( date ) 
-      return date.replace( " ", "_" ).replace( ":", "" )
+      return date.replace( " ", "_" ).replace( ":", "" ) + ".mts"
 
    def buildNewFilePath( self, meta ):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["File:FileModifyDate"], 0 ) + "/" + self.retPart( meta["File:FileModifyDate"], 1 ) + "/" + self.retPart( meta["File:FileModifyDate"], 2 )
@@ -37,8 +37,9 @@ class fileManipulation_m2ts( fileManipulation ):
       return d
 
    def main( self, meta ):
-#      pprint( meta )
       a = []
+      good = 0
+      un = 0 
       for one in meta:
          if "File:FileModifyDate" in one:
             d = { "sourcePath" : one["File:Directory"]
@@ -50,8 +51,12 @@ class fileManipulation_m2ts( fileManipulation ):
                  ,"newFileName" : self.buildNewFileName( one["File:FileModifyDate"] ) 
                 }
             a.append( d )
+            good += 1
          else:
-            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
+            d = { "unknown" : one["SourceFile"] }
+            a.append( d )
+            un += 1
 
-#      print a
+      self.logger.info( "Found %s valid M2TS's" % ( good ))
+      self.logger.info( "Found %s unknown MT2S's" % ( un ))
       self.yahoo( a )
