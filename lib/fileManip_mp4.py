@@ -13,6 +13,8 @@ from fileManip        import fileManipulation
 
 class fileManipulation_mp4( fileManipulation ):
 
+   extension = ".mp4"
+
    def __init__( self, meta, conf, logName ):
       fileManipulation.__init__( self, conf, logName )
       self.logger = logging.getLogger(logName+".fileManipulation_mp4")
@@ -38,7 +40,7 @@ class fileManipulation_mp4( fileManipulation ):
 
    def buildNewFileName( self, date ):
       t = self.adjustUTC2Local( date )
-      return t.strftime( "%Y%m%d_%H%M%S" ) + ".mp4"
+      return t.strftime( "%Y%m%d_%H%M%S" ) + self.extension 
 
    def buildNewFilePath( self, meta ):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["QuickTime:CreateDate"], '%Y' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%m' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%d' )      

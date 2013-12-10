@@ -10,6 +10,8 @@ from fileManip        import fileManipulation
 
 class fileManipulation_m2ts( fileManipulation ):
 
+   extension = '.mts'
+
    def __init__( self, meta, conf, logName ):
       fileManipulation.__init__( self, conf, logName )
       self.logger = logging.getLogger(logName+".fileManipulation_m2ts")
@@ -29,7 +31,7 @@ class fileManipulation_m2ts( fileManipulation ):
    
    def buildNewFileName( self, date ):
       date = self.removeTZOffset( date ) 
-      return date.replace( " ", "_" ).replace( ":", "" ) + ".mts"
+      return date.replace( " ", "_" ).replace( ":", "" ) + self.extension 
 
    def buildNewFilePath( self, meta ):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["File:FileModifyDate"], 0 ) + "/" + self.retPart( meta["File:FileModifyDate"], 1 ) + "/" + self.retPart( meta["File:FileModifyDate"], 2 )

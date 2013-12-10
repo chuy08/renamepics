@@ -10,6 +10,8 @@ from fileManip    import fileManipulation
 
 class fileManipulation_jpeg( fileManipulation ):
 
+   extension = ".jpeg"
+
    def __init__( self, meta, conf, logName ):
       fileManipulation.__init__( self, conf, logName )
       self.logger = logging.getLogger(logName+".fileManipulation_jpeg")
@@ -22,7 +24,7 @@ class fileManipulation_jpeg( fileManipulation ):
 
    def buildNewFileName( self, meta):
       f = ( meta["EXIF:CreateDate"] ).replace( " ", "_" ).replace( ":", "")
-      return f + ".jpg"
+      return f + self.extension 
 
    def buildNewFilePath( self, meta ):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["EXIF:CreateDate"], 0 ) + "/" + self.retPart( meta["EXIF:CreateDate"], 1 ) + "/" + self.retPart( meta["EXIF:CreateDate"], 2 )
