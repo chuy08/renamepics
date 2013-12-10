@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import json
 import logging
 import logging.config
@@ -12,10 +13,22 @@ sys.path.append( './lib' )
 from fileManip    import fileManipulation
 from minify_json  import json_minify
 
-CONFFILE = 'params.conf'
+CONFFILE = 'params.conf.json'
 LOGNAME = 'manip'
 
 def main():
+
+   parser = argparse.ArgumentParser(description='File Manipulation')
+   parser.add_argument( '-c', '--conf'
+                       ,default=CONFFILE
+                       ,help='default config file is params.conf.json'
+                      )
+   parser.add_argument( '-d', '--directory'
+                       ,default=None
+                       ,help='The Absolute path of the pictures we are dealing with'
+                      )
+   args=parser.parse_args()
+   rootdir = args.directory
 
    # Loading config file
    json_data = open( CONFFILE )
@@ -23,6 +36,10 @@ def main():
    json_data.close()
 
    conf = data["config"]
+
+   # Overriding rootdir by command line if set
+   if rootdir:
+      conf["rootDir"] = rootdir
 
    ## Logger configuration.
    try:
