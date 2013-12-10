@@ -1,128 +1,269 @@
 #!/usr/bin/env python
 
+import datetime
+import json
 import logging
+import logging.config
 import os
+import pytz
 import shutil
-import argparse
+import time
 
-from os.path import isfile, join
-from pprint import pprint
+from exiftool     import ExifTool
+from minify_json  import json_minify
+from pprint       import pprint
 
-import exiftool
+CONFFILE = 'params.conf'
+LOGNAME = 'zabbPkl'
 
-logging.basicConfig(filename='testtest.log',
-                    level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)-8s %(message)s')
+class fileManipulation():
 
-### Global Variables
-__directory = None 
-__outDir = 'output'
+   def __init__( self, conf, logName ):
+      ## Setup the logger for all subclasses.
+      self.conf = conf 
+      self.outdir = self.conf["outDir"]
+      self.rootdir = self.conf["rootDir"] 
+      self.logName = logName
+      self.logger = logging.getLogger(logName+".fileManipulation")
+      self.logger.info("fileManipulation")
 
-parser = argparse.ArgumentParser( description='Sort pictures by EXIF created date' )
-parser.add_argument( '-d', '--directory', default=__directory, help="Directory of pictures to parse" )
-parser.add_argument( '-o', '--output', default=__outDir, help="Folder where sorted pictures go" )
-parser.add_argument( '-c', '--create', action='store_true', help="By default we only log things, set this flag to actually do things." )
-parser.add_argument( '-v', '--verbose', action='store_true', help="Print helpful debugging things" )
+   def _removeErrors( self, meta ):
+      r = [] 
+      for each in meta:
+         if "ExifTool:Error" not in each:
+            r.append( each )
+         else:
+            self.logger.info( "Not a valid file: %s" % ( each["SourceFile"] ))
+      self.logger.info( "Found %s files with vaild meta information" % ( len( r ) ))
+      return r
 
-args = parser.parse_args()
-directory = args.directory
-outDir = args.output
+   def getMeta( self, files ):
+      et = ExifTool()
+      et.start()
+      a = et.get_metadata_batch( files )
+      et.terminate()
+      meta = self._removeErrors( a )
+      return meta
 
-if directory is None:
-   print "I need a directory of pictures for this to work"
-   exit(1)
+   def files( self ):
+      f = []
+      for dir in os.walk( self.rootdir ):
+         for fileName in dir[2]:
+            f.append( os.path.join( dir[0], fileName ) )
 
-def get_files(dir):
-   return [ f for f in os.listdir(directory) if isfile(join(directory, f)) ]
+      meta = self.getMeta( f )
+      self.identifyType( meta )
+      return meta 
 
-def absFileName(names):
-   absFiles = []
-   for file in names:
-      afile = directory + "/" + file
-      absFiles.append(afile)
-   return absFiles
+   def createOutDirs( self, dir ):
+      for one in dir:
+         newdirs = self.rootdir + "/" + self.outdir + "/" + one["year"] + "/" + one["month"] + "/" + one["day"]
+         try:
+            os.makedirs( newdirs )
+         except:
+            pass 
 
-def getMetaData(files):
-   et = exiftool.ExifTool()
-   et.start()
-   metadata = et.get_metadata_batch(files)
-   et.terminate()
-   return metadata
+   def copyFile( self, files ):
+      for one in files:
+         origfile = os.path.join( one["sourcePath"], one["origFileName"] )
+#         newfile = os.path.join( one["newFilePath"], one["newFileName"] )
+#         print origfile, one["newFilePath"]
+         try:
+            shutil.copy( origfile, one["newFilePath"] )
+         except:
+            self.logger.info( "Copy failed for: %s" % ( origfile ))
 
-def newDirName(date):
-   date = date.replace(' ', ':')
-   split = date.split(":")
-   yyyy = split[0]
-   subdir = split[0] + "_" + split[1] + "_" + split[2]
-   newdir = directory + "/" + outDir + "/" + yyyy + "/" + subdir
-   return newdir 
+   def yahoo( self, data ):
+      self.createOutDirs( data )
+      self.copyFile( data )
 
-def createDir(newdir, args):
-   if os.path.exists(newdir):
-      pass
-#      logging.info("Directory exists, moving on to next one %s", newdir)
+   def identifyType( self, meta ):
+      jpeg = []
+      mp4 = []
+      m2ts = []
+      for one in meta:
+#         print one["File:FileType"]
+         if one["File:FileType"] == "JPEG":
+            jpeg.append( one )
+         elif one["File:FileType"] == "MP4":
+            mp4.append( one )
+         elif one["File:FileType"] == "M2TS":
+            m2ts.append( one )
+   
+         else:
+#            print one["File:FileType"]
+            self.logger.info( "Don't know what to do with %s" % ( one["File:FileType"] ))
 
-   else:
-      logging.info("Creating directory %s", newdir)
-      if args.create:
-         os.makedirs(newdir)
+      j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
+      mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
+      m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
       
-def copyFile(newdir, each, args):
-   orig = each["File:Directory"] + "/" + each["File:FileName"] 
-   backup = newdir + "/" + each["File:FileName"]
-   logging.info("%s Copying file %s", i, each["File:FileName"])
-   if args.create:
-      shutil.copy2(orig, backup)
 
-logging.info("### START ###")
+class fileManipulation_m2ts( fileManipulation ):
 
-if not args.create:
-   logging.info("DRY RUN ONLY, we won't actually move anything")
+   def __init__( self, meta, conf, logName ):
+      fileManipulation.__init__( self, conf, logName )
+      self.logger = logging.getLogger(logName+".fileManipulation_m2ts")
+      self.logger.info("fileManipulation_m2ts")
+      self.main( meta )
 
-onlyfiles = get_files(dir)
-logging.info("Found %s files to process", len(onlyfiles))
+   def retPart( self, date, num ):
+      # [ 'YYYY', 'MM', 'DD', 'HH', 'MM', 'SEC' ] - send in which is needed
+      date = self.removeTZOffset( date ) 
+      d = date.replace( " ", ":" )
+      splitD = d.split( ":" )
+#      print type( num )
+      return splitD[num]
 
-afile = absFileName(onlyfiles)
+   def removeTZOffset( self, date ):
+      return date.split( "-" )[0]
+   
+   def buildNewFileName( self, date ):
+      date = self.removeTZOffset( date ) 
+      return date.replace( " ", "_" ).replace( ":", "" )
 
-metadata = getMetaData(afile)
+   def buildNewFilePath( self, meta ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["File:FileModifyDate"], 0 ) + "/" + self.retPart( meta["File:FileModifyDate"], 1 ) + "/" + self.retPart( meta["File:FileModifyDate"], 2 )
+#      print d
+      return d
 
-i = 1 
-for each in metadata:
-   if 'ExifTool:Error' in each:
-      logging.info("%s Skipping this %s - %s", i, each["File:FileName"], each["ExifTool:Error"])
-      error = directory + "/" + outDir + "/error"
-      createDir(error, args)
-      backup = error + "/" + each["File:FileName"]
+   def main( self, meta ):
+#      pprint( meta )
+      a = []
+      for one in meta:
+         if "File:FileModifyDate" in one:
+            d = { "sourcePath" : one["File:Directory"]
+                 ,"origFileName" : one["File:FileName"]
+                 ,"year" : self.retPart( one["File:FileModifyDate"], 0 ) 
+                 ,"month" : self.retPart( one["File:FileModifyDate"], 1 ) 
+                 ,"day" : self.retPart( one["File:FileModifyDate"], 2 )
+                 ,"newFilePath" : self.buildNewFilePath( one ) 
+                 ,"newFileName" : self.buildNewFileName( one["File:FileModifyDate"] ) 
+                }
+            a.append( d )
+         else:
+            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
 
-      if args.create:
-         shutil.copy(each["SourceFile"], backup)
-      i += 1
-
-   elif 'EXIF:DateTimeOriginal' in each:
-#   elif 'EXIF:CreateDate' in each:
-      newdir = newDirName(each["EXIF:DateTimeOriginal"])
-      createDir(newdir, args)
-      copyFile(newdir, each, args)
-      i += 1
-
-   elif 'QuickTime:MediaCreateDate' in each:
-      newdir = newDirName( each["QuickTime:MediaCreateDate"] )
-      createDir(newdir, args)
-      copyFile(newdir, each, args)
-      i += 1
-
-   else:
-      if args.verbose:
-         pprint(each)
-      logging.info("### HOUSTWEHAVEAPROBLEM ###") 
-      logging.info("%s %s", i, each["SourceFile"]) 
-      unknown = directory + "/" + outDir + "/unknown" 
-      createDir(unknown, args)
-      backup = unknown + "/" + each["File:FileName"]
-     
-      if args.create:
-         shutil.copy(each["SourceFile"], backup)
-      i += 1
+#      print a
+      self.yahoo( a )
 
 
-logging.info("### END ###")
+class fileManipulation_mp4( fileManipulation ):
+
+   def __init__( self, meta, conf, logName ):
+      fileManipulation.__init__( self, conf, logName )
+      self.logger = logging.getLogger(logName+".fileManipulation_mp4")
+      self.logger.info("fileManipulation_mp4")
+      self.main( meta )
+
+   def retPart( self, date, fmt ):
+      # fmt is the linux time format command 
+      t = self.adjustUTC2Local( date )
+      return t.strftime( fmt )
+
+   def adjustUTC2Local( self, date ):
+      # Quicktime encodes create date as UTC 
+      timeZone = pytz.timezone( self.conf["timeZone"] )
+      dtformat = '%Y:%m:%d %H:%M:%S'
+      t = datetime.datetime.strptime( date, dtformat).replace(tzinfo=pytz.utc)
+      return timeZone.normalize( t )
+
+   def buildNewFileName( self, date ):
+      t = self.adjustUTC2Local( date )
+      return t.strftime( "%Y%m%d_%H%M%S" ) + ".mp4"
+
+   def buildNewFilePath( self, meta ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["QuickTime:CreateDate"], '%Y' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%m' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%d' )      
+#      print d
+      return d
+
+   def main( self, meta ):
+#      pprint( meta )
+      a = []
+      for one in meta:
+         if "QuickTime:CreateDate" in one:
+            d = { "sourcePath" : one["File:Directory"]
+                 ,"origFileName" : one["File:FileName"]
+                 ,"year" : self.retPart( one["QuickTime:CreateDate"], '%Y' ) 
+                 ,"month" : self.retPart( one["QuickTime:CreateDate"], '%m' ) 
+                 ,"day" : self.retPart( one["QuickTime:CreateDate"], '%d' )
+                 ,"newFilePath" : self.buildNewFilePath( one ) 
+                 ,"newFileName" : self.buildNewFileName( one["QuickTime:CreateDate"] ) 
+                }
+            a.append( d )
+         else:
+            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
+
+#      print a
+      self.yahoo( a )
+
+
+class fileManipulation_jpeg( fileManipulation ):
+
+   def __init__( self, meta, conf, logName ):
+      fileManipulation.__init__( self, conf, logName )
+      self.logger = logging.getLogger(logName+".fileManipulation_jpeg")
+      self.logger.info("fileManipulation_jpeg")
+      self.main( meta )
+
+   def retPart( self, date, num ):
+      # YYYY:MM:DD:HH:MM:SS where num = it's position
+      return date.replace( " ", ":" ).split( ":" )[num]
+
+   def buildNewFileName( self, meta):
+      f = ( meta["EXIF:CreateDate"] ).replace( " ", "_" ).replace( ":", "")
+      return f + ".jpg"
+
+   def buildNewFilePath( self, meta ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["EXIF:CreateDate"], 0 ) + "/" + self.retPart( meta["EXIF:CreateDate"], 1 ) + "/" + self.retPart( meta["EXIF:CreateDate"], 2 )
+#      print d
+      return d
+
+   def main( self, meta ):
+      a = []
+      for one in meta:
+         if "EXIF:CreateDate" in one:
+            d = { "sourcePath" : one["File:Directory"]
+                 ,"origFileName" : one["File:FileName"]
+                 ,"year" : self.retPart( one["EXIF:CreateDate"], 0 ) 
+                 ,"month" : self.retPart( one["EXIF:CreateDate"], 1 ) 
+                 ,"day" : self.retPart( one["EXIF:CreateDate"], 2 )
+                 ,"newFilePath" : self.buildNewFilePath( one ) 
+                 ,"newFileName" : self.buildNewFileName( one ) 
+                }
+            a.append( d )
+         else:
+            self.logger.info( "No CreateDate: %s" % ( one["SourceFile"] )) 
+
+      self.yahoo( a )
+
+
+def main():
+
+   # Loading config file
+   json_data = open( CONFFILE )
+   data = json.loads( json_minify( json_data.read()))
+   json_data.close()
+
+   conf = data["config"]
+
+   ## Logger configuration.
+   try:
+      logging.config.dictConfig(data["loggerConf"])
+   except ValueError:
+      print >> sys.stderr, "logger configuration not excepted"
+      print >> sys.stderr, data["loggerConf"]
+      sys.exit()
+
+   logger = logging.getLogger(LOGNAME)
+   logger.info( "Config file used: %s" % ( CONFFILE ))
+
+   fm = fileManipulation( conf, LOGNAME )
+   fm.files()
+   
+
+
+
+
+if __name__ == "__main__":
+   main()
