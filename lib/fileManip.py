@@ -32,6 +32,10 @@ class fileManipulation():
       self.logger.info( "Found %s files with vaild meta information" % ( len( r ) ))
       return r
 
+   def buildUnknownFilePath( self ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.conf["unknown"]
+      return d
+
    def getMeta( self, files ):
       et = ExifTool()
       et.start()
@@ -61,26 +65,41 @@ class fileManipulation():
    def createOutDirs( self, dir ):
       for one in dir:
          newdirs = ''
-         if "unknown" in one:
-            newdirs = self.rootdir + "/" + self.outdir + "/" + self.unknown 
+         if "version" in one:
+            try:
+               os.makedirs( one["newFilePath"] )
+            except:
+               pass
+
+         elif "unknown" in one:
+            try:
+               os.makedirs( one["newFilePath"] )
+            except:
+               pass 
          else:
             newdirs = self.rootdir + "/" + self.outdir + "/" + one["year"] + "/" + one["month"] + "/" + one["day"]
-
-         try:
-            os.makedirs( newdirs )
-         except:
-            pass 
+            try:
+               os.makedirs( newdirs )
+            except:
+               pass 
 
    def copyFile( self, files ):
 #      pprint( files)
       for one in files:
 #         print type( one["sourcePath"] ), one["sourcePath"], type( one["origFileName"]), one["origFileName"]
-         if "unknown" in one:
-            newdir = self.rootdir + "/" + self.outdir + "/" + self.unknown
+         orig = os.path.join( one["sourcePath"], one["origFileName"] )
+         if "version" in one:
             try:
-               shutil.copy2( one["unknown"], newdir )
+               shutil.copy2( orig, one["newFilePath"] ) 
             except:
-               self.logger.info( "Copy failed for: %s" % ( one["unknown"] ))
+               self.logger.info( "Copy failed for: %s" % ( orig ))
+
+         elif "unknown" in one:
+            #newdir = self.rootdir + "/" + self.outdir + "/" + self.unknown
+            try:
+               shutil.copy2( orig, one["newFilePath"] )
+            except:
+               self.logger.info( "Copy failed for: %s" % ( orig ))
 
          else:
             origfile = os.path.join( one["sourcePath"], one["origFileName"] )
@@ -108,6 +127,9 @@ class fileManipulation():
       m2ts = []
       png = []
       mov = []
+      gif = []
+      instagram = []
+      music = []
       for one in meta:
 #         print one["File:FileType"]
          if one["File:FileType"] == "JPEG":
@@ -120,6 +142,12 @@ class fileManipulation():
             png.append( one )
          elif one["File:FileType"] == "MOV":
             mov.append( one )
+         elif one["File:FileType"] == "GIF":
+            gif.append( one )
+         elif one["File:FileType"] == "WEBM" and 'instagram' in one["Matroska:WritingApp"]:
+            instagram.append( one )
+         elif one["File:FileType"] in self.conf["music"]:
+            music.append( one ) 
    
          else:
 #            print one["File:FileType"]
@@ -127,20 +155,32 @@ class fileManipulation():
 
       if len( jpeg ) > 0:
          from fileManip_jpg      import fileManipulation_jpeg 
-         j = fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
+         fileManipulation_jpeg( jpeg, self.conf, self.logName ) 
 
-#      if len( mp4 ) > 0:
-#         from fileManip_mp4      import fileManipulation_mp4
-#         mp = fileManipulation_mp4( mp4, self.conf, self.logName ) 
+      if len( mp4 ) > 0:
+         from fileManip_mp4      import fileManipulation_mp4
+         fileManipulation_mp4( mp4, self.conf, self.logName ) 
 
-#      if len( m2ts ) > 0:
-#         from fileManip_m2ts      import fileManipulation_m2ts 
-#         m2 = fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
+      if len( m2ts ) > 0:
+         from fileManip_m2ts      import fileManipulation_m2ts 
+         fileManipulation_m2ts( m2ts, self.conf, self.logName ) 
       
-#      if len( png ) > 0:
-#         from fileManip_png      import fileManipulation_png
-#         p = fileManipulation_png( png, self.conf, self.logName ) 
+      if len( png ) > 0:
+         from fileManip_png      import fileManipulation_png
+         fileManipulation_png( png, self.conf, self.logName ) 
 
       if len( mov ) > 0:
          from fileManip_mov      import fileManipulation_mov
-         mo = fileManipulation_mov( mov, self.conf, self.logName ) 
+         fileManipulation_mov( mov, self.conf, self.logName ) 
+
+      if len( gif ) > 0:
+         from fileManip_gif      import fileManipulation_gif
+         fileManipulation_gif( gif, self.conf, self.logName ) 
+
+      if len( music ) > 0:
+         from fileManip_music      import fileManipulation_music
+         fileManipulation_music( music, self.conf, self.logName ) 
+
+      if len( instagram ) > 0:
+         from fileManip_instagram      import fileManipulation_instagram
+         fileManipulation_instagram( instagram, self.conf, self.logName ) 

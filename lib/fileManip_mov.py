@@ -32,30 +32,32 @@ class fileManipulation_mov( fileManipulation ):
       f = d.replace( " ", "_" ).replace( ":", "")
       return f + self.extension
 
-   def buildNewFilePath( self, meta ):
-      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["QuickTime:CreateDate"], 0 ) + "/" + self.retPart( meta["QuickTime:CreateDate"], 1 ) + "/" + self.retPart( meta["QuickTime:CreateDate"], 2 )
+   def buildNewFilePath( self, date ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( date, 0 ) + "/" + self.retPart( date, 1 ) + "/" + self.retPart( date, 2 )
 #      print d
       return d
 
    def main( self, meta ):
-      pprint( meta )
       a = []
       good = 0 
       un = 0
       for one in meta:
          if "QuickTime:CreateDate" in one:
-            d = { "sourcePath" : one["File:Directory"]
+            d = { "version" : 1
+                 ,"sourcePath" : one["File:Directory"]
                  ,"origFileName" : unicode( one["File:FileName"] )
-                 ,"year" : self.retPart( one["QuickTime:CreateDate"], 0 ) 
-                 ,"month" : self.retPart( one["QuickTime:CreateDate"], 1 ) 
-                 ,"day" : self.retPart( one["QuickTime:CreateDate"], 2 )
-                 ,"newFilePath" : self.buildNewFilePath( one ) 
+                 ,"newFilePath" : self.buildNewFilePath( one["QuickTime:CreateDate"] ) 
                  ,"newFileName" : self.buildNewFileName( one["QuickTime:CreateDate"] ) 
                 }
             a.append( d )
             good += 1
          else:
-            d = { "unknown" : one["SourceFile"] } 
+            d = { "unknown" : 0
+                 ,"sourcePath" : one["File:Directory"]
+                 ,"origFileName" : unicode( one["File:FileName"] )
+                 ,"newFilePath" : self.buildUnknownFilePath()
+                 ,"newFileName" : unicode( one["File:FileName"] ) 
+                } 
             a.append( d )
             un += 1
 

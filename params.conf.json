@@ -2,8 +2,10 @@
    "config" : {
        // Where we put our processed files
        "outDir" : "output" 
-       // Where to put files can't be processed
+       // Where to put files we can't process
       ,"unknown" : "unknown"
+      // Where we'll put music files
+      ,"musicDir" : "Music"
       ,"rootDir" : "/Users/chuy08/work/python/renamePics2/party"
       // Quicktime uses UTC time, I convert it to the timezone listed here
       // For valid timezones lookup pytz python package
@@ -13,6 +15,8 @@
       ,"rename" : false
       // Any directories we should ignore
       ,"ignoreDirs" : [ ".thumbnails", "thumbnails" ]
+      // Music file extensions
+      ,"music" : [ "MP3", "WAV", "OGG" ]
    }
 
    ,"loggerConf" : {

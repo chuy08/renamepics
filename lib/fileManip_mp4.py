@@ -42,9 +42,8 @@ class fileManipulation_mp4( fileManipulation ):
       t = self.adjustUTC2Local( date )
       return t.strftime( "%Y%m%d_%H%M%S" ) + self.extension 
 
-   def buildNewFilePath( self, meta ):
-      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( meta["QuickTime:CreateDate"], '%Y' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%m' ) + "/" + self.retPart( meta["QuickTime:CreateDate"], '%d' )      
-#      print d
+   def buildNewFilePath( self, date ):
+      d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.retPart( date, '%Y' ) + "/" + self.retPart( date, '%m' ) + "/" + self.retPart( date, '%d' )      
       return d
 
    def main( self, meta ):
@@ -53,19 +52,21 @@ class fileManipulation_mp4( fileManipulation ):
       un = 0 
       for one in meta:
          if "QuickTime:CreateDate" in one:
-            d = { "sourcePath" : one["File:Directory"]
+            d = { "version" : 1
+                 ,"sourcePath" : one["File:Directory"]
                  ,"origFileName" : unicode( one["File:FileName"] )
-                 ,"year" : self.retPart( one["QuickTime:CreateDate"], '%Y' ) 
-                 ,"month" : self.retPart( one["QuickTime:CreateDate"], '%m' ) 
-                 ,"day" : self.retPart( one["QuickTime:CreateDate"], '%d' )
-                 ,"newFilePath" : self.buildNewFilePath( one ) 
+                 ,"newFilePath" : self.buildNewFilePath( one["QuickTime:CreateDate"] ) 
                  ,"newFileName" : self.buildNewFileName( one["QuickTime:CreateDate"] ) 
                 }
             a.append( d )
             good += 1
          else:
-            print one
-            d = { "unknown" : one["SourceFile"] }
+            d = { "unknown" : 0
+                 ,"sourcePath" : one["File:Directory"]
+                 ,"origFileName" : unicode( one["File:FileName"] )
+                 ,"newFilePath" : self.buildUnknownFilePath()
+                 ,"newFileName" : unicode( one["File:FileName"] )
+                }
             a.append( d )
             un += 1
 
