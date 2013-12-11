@@ -39,7 +39,6 @@ class fileManipulation_instagram( fileManipulation ):
      
 
    def main( self, meta ):
-      pprint( meta )
       a = []
       good = 0 
       un = 0
