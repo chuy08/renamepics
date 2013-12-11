@@ -77,11 +77,7 @@ class fileManipulation():
             except:
                pass 
          else:
-            newdirs = self.rootdir + "/" + self.outdir + "/" + one["year"] + "/" + one["month"] + "/" + one["day"]
-            try:
-               os.makedirs( newdirs )
-            except:
-               pass 
+            self.logger.warn( "I don't know what to do?" )
 
    def copyFile( self, files ):
 #      pprint( files)
@@ -130,6 +126,7 @@ class fileManipulation():
       gif = []
       instagram = []
       music = []
+      threegp = []
       for one in meta:
 #         print one["File:FileType"]
          if one["File:FileType"] == "JPEG":
@@ -144,6 +141,8 @@ class fileManipulation():
             mov.append( one )
          elif one["File:FileType"] == "GIF":
             gif.append( one )
+         elif one["File:FileType"] == "3GP":
+            threegp.append( one )
          elif one["File:FileType"] == "WEBM" and 'instagram' in one["Matroska:WritingApp"]:
             instagram.append( one )
          elif one["File:FileType"] in self.conf["music"]:
@@ -184,3 +183,8 @@ class fileManipulation():
       if len( instagram ) > 0:
          from fileManip_instagram      import fileManipulation_instagram
          fileManipulation_instagram( instagram, self.conf, self.logName ) 
+
+      if len( threegp ) > 0:
+         from fileManip_threegp      import fileManipulation_threegp
+         fileManipulation_threegp( threegp, self.conf, self.logName ) 
+

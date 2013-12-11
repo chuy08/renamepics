@@ -16,7 +16,7 @@
       // Any directories we should ignore
       ,"ignoreDirs" : [ ".thumbnails", "thumbnails" ]
       // Music file extensions
-      ,"music" : [ "MP3", "WAV", "OGG" ]
+      ,"music" : [ "MP3", "WAV", "OGG", "M4A" ]
    }
 
    ,"loggerConf" : {
