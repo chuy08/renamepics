@@ -1,56 +1,58 @@
 {
    "config" : {
-       // Where we put our processed files
-       "outDir" : "output" 
-       // Where to put files we can't process
-      ,"unknown" : "unknown"
+      // Where we put our processed files
+      "outDir": "output",
+      // Where to put files we can't process
+      "unknown": "unknown",
       // Where we'll put music files
-      ,"musicDir" : "Music"
-      ,"rootDir" : "/Users/chuy08/work/python/renamePics2/party"
+      "musicDir": "Music",
+      "rootDir": "samples/",
       // Quicktime uses UTC time, I convert it to the timezone listed here
       // For valid timezones lookup pytz python package
-      ,"timeZone" : "US/Pacific"
+      "timeZone": "US/Pacific",
       // True - Rename pictures and sort
       // False - Just sort pictures keep original name
-      ,"rename" : false
+      "rename": false,
       // Any directories we should ignore
-      ,"ignoreDirs" : [ ".thumbnails", "thumbnails" ]
+      "ignoreDirs": [ ".thumbnails", "thumbnails" ],
       // Music file extensions
-      ,"music" : [ "MP3", "WAV", "OGG", "M4A" ]
-   }
+      "music": [ "MP3", "WAV", "OGG", "M4A" ]
+   },
 
-   ,"loggerConf" : {
-       "version" : 1
-      ,"formatters" : {
-         "long" : {
-            "format" : "%(asctime)s-%(name)s.%(funcName)s,%(lineno)d-%(levelname)s-'%(message)s'"
-           ,"datefmt" : "%Y%m%d.%H%M%S" 
+   "LOGGING_CONFIG": {
+      "version": 1,
+      "formatters" : {
+         "long": {
+            "format" : "%(asctime)s-%(name)s.%(funcName)s,%(lineno)d-%(levelname)s '%(message)s'",
+            "datefmt" : "%Y%m%d.%H%M%S" 
          },
-         "short" : {
+         "short": {
             "format" : "%(asctime)s %(levelname)-8s %(message)s"
          }
 
       },
-       "handlers" : {
-          "console" : {
-             "class" : "logging.StreamHandler"
-            ,"formatter" : "short"
-            ,"level" : "INFO"
+      "handlers": {
+         "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "long",
+            "level": "INFO",
+            "stream": "ext://sys.stdout"
+         },
+         
+         "file": {
+           "class": "logging.handlers.RotatingFileHandler",
+           "formatter": "long",
+           "level": "INFO",
+           "filename": "manip.log",
+           "maxBytes": 6553600,
+           "backupCount": 5
+         }
 
-          },
-           "logfile" : {
-              "class" : "logging.handlers.RotatingFileHandler"
-             ,"formatter" : "long"
-             ,"level" : "INFO"
-             ,"filename" : "manip.log"
-             ,"maxBytes" : 6553600
-             ,"backupCount" : 5
-           } 
        },
-        "loggers" : {
-           "manip" : {
-              "level" : "DEBUG"
-             ,"handlers" : ["logfile"]
+        "loggers": {
+           "": {
+             "level": "DEBUG",
+             "handlers": ["console"]
            }
         } 
    }

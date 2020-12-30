@@ -4,20 +4,17 @@ import os
 import shutil
 import sys
 
-from exiftool     import ExifTool
-from pprint       import pprint
+from exif import Image
+#from pprint       import pprint
 
-class fileManipulation():
+class fileManipulation(object):
 
-   def __init__( self, conf, logName ):
-      ## Setup the logger for all subclasses.
+   def __init__( self, conf):
+      self.logger = logging.getLogger(__name__)
       self.conf = conf 
       self.outdir = self.conf["outDir"]
-      self.rootdir = self.conf["rootDir"] 
-      self.unknown = self.conf["unknown"] 
-      self.logName = logName
-      self.logger = logging.getLogger(logName+".fileManipulation")
-      self.logger.info("fileManipulation")
+      #self.rootdir = self.conf["rootDir"]
+      self.unknown = self.conf["unknown"]
 
    def _removeErrors( self, meta ):
       r = [] 
@@ -43,20 +40,20 @@ class fileManipulation():
 
    def files( self ):
       f = []
-      if not os.path.exists( self.rootdir ):
-         print("Root dir doesn't seem to be vaild")
+      if not os.path.exists( self.conf["rootDir"] ):
+         self.logger.error("Root dir doesn't seem to be vaild")
          sys.exit( 1 )
 
-      for root, subFolders, files in os.walk( self.rootdir ):
-         for one in self.conf["ignoreDirs"]:
-            if one in subFolders:
-               subFolders.remove( one )
-         for fileName in files:
-            f.append( os.path.join( root, fileName ) )
+#      for root, subFolders, files in os.walk( self.rootdir ):
+#         for one in self.conf["ignoreDirs"]:
+#            if one in subFolders:
+#               subFolders.remove( one )
+#         for fileName in files:
+#            f.append( os.path.join( root, fileName ) )
 #      pprint( f )
 
-      meta = self.getMeta( f )
-      self.identifyType( meta )
+#      meta = self.getMeta( f )
+#      self.identifyType( meta )
 #      return meta 
 
    def createOutDirs( self, dir ):

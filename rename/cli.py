@@ -21,11 +21,13 @@ def main():
                        ,default=__CONFFILE
                        ,help='default config file is params.conf.json'
                       )
+
    parser.add_argument( '-d', '--directory'
                        ,default=None
                        ,help='The Absolute path of the pictures we are dealing with'
                       )
-   args=parser.parse_args()
+
+   args = parser.parse_args()
    rootdir = args.directory
    CONFFILE = args.conf
 
@@ -35,6 +37,7 @@ def main():
    json_data.close()
 
    conf = data["config"]
+   # pprint(data["LOGGING_CONFIG"])
 
    # Overriding rootdir by command line if set
    if rootdir:
@@ -42,17 +45,17 @@ def main():
 
    ## Logger configuration.
    try:
-      logging.config.dictConfig(data["loggerConf"])
+      logging.config.dictConfig(data["LOGGING_CONFIG"])
    except ValueError:
       print >> sys.stderr, "logger configuration not excepted"
-      print >> sys.stderr, data["loggerConf"]
+      print >> sys.stderr, data["LOGGING_CONFIG"]
       sys.exit()
 
-   logger = logging.getLogger(LOGNAME)
+   logger = logging.getLogger(__name__)
    logger.info( "Config file used: %s" % ( CONFFILE ))
    logger.info( "Rootdir used: %s" % ( conf["rootDir"] ))
 
-   fm = fileManipulation( conf, LOGNAME )
+   fm = fileManipulation( conf )
    fm.files()
    
    logger.info( "Finished..." )
