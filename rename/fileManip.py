@@ -1,11 +1,8 @@
-#!/usr/bin/env python
 
 import logging
 import os
 import shutil
 import sys
-
-sys.path.append( './lib' )
 
 from exiftool     import ExifTool
 from pprint       import pprint
@@ -47,7 +44,7 @@ class fileManipulation():
    def files( self ):
       f = []
       if not os.path.exists( self.rootdir ):
-         print "Root dir doesn't seem to be vaild"
+         print("Root dir doesn't seem to be vaild")
          sys.exit( 1 )
 
       for root, subFolders, files in os.walk( self.rootdir ):
@@ -82,7 +79,7 @@ class fileManipulation():
    def copyFile( self, files ):
 #      pprint( files)
       for one in files:
-#         print type( one["sourcePath"] ), one["sourcePath"], type( one["origFileName"]), one["origFileName"]
+#         print( type( one["sourcePath"] ), one["sourcePath"], type( one["origFileName"]), one["origFileName"])
          orig = os.path.join( one["sourcePath"], one["origFileName"] )
          if "version" in one:
             try:
@@ -128,7 +125,7 @@ class fileManipulation():
       music = []
       threegp = []
       for one in meta:
-#         print one["File:FileType"]
+#         print(one["File:FileType"])
          if one["File:FileType"] == "JPEG":
             jpeg.append( one )
          elif one["File:FileType"] == "MP4":
@@ -149,7 +146,7 @@ class fileManipulation():
             music.append( one ) 
    
          else:
-#            print one["File:FileType"]
+#            print(one["File:FileType"])
             self.logger.info( "Don't know what to do with %s" % ( one["File:FileType"] ))
 
       if len( jpeg ) > 0:

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 import argparse
 import json
@@ -6,12 +5,10 @@ import logging
 import logging.config
 import sys
 
-from pprint           import pprint
+from pprint  import pprint
 
-sys.path.append( './lib' )
-
-from fileManip    import fileManipulation
-from minify_json  import json_minify
+from .fileManip import fileManipulation
+from .minify_json  import json_minify
 
 __CONFFILE = 'params.conf.json'
 
@@ -59,8 +56,6 @@ def main():
    fm.files()
    
    logger.info( "Finished..." )
-
-
 
 
 if __name__ == "__main__":
