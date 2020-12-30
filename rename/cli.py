@@ -7,7 +7,7 @@ import sys
 
 from pprint  import pprint
 
-from .fileManip import fileManipulation
+from .readExif import readExifData
 from .minify_json  import json_minify
 
 __CONFFILE = 'params.conf.json'
@@ -55,7 +55,7 @@ def main():
    logger.info( "Config file used: %s" % ( CONFFILE ))
    logger.info( "Rootdir used: %s" % ( conf["rootDir"] ))
 
-   fm = fileManipulation( conf )
+   fm = readExifData( conf )
    fm.files()
    
    logger.info( "Finished..." )

@@ -7,7 +7,7 @@ import sys
 from exif import Image
 from pprint import pprint
 
-class fileManipulation(object):
+class readExifData(object):
 
    def __init__( self, conf):
       self.logger = logging.getLogger(__name__)
@@ -29,13 +29,13 @@ class fileManipulation(object):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.conf["unknown"]
       return d
 
-   def getMeta( self, files ):
-      et = ExifTool()
-      et.start()
-      a = et.get_metadata_batch( files )
-      et.terminate()
-      meta = self._removeErrors( a )
-      return meta
+   #def getMeta( self, files ):
+   #   et = ExifTool()
+   #   et.start()
+   #   a = et.get_metadata_batch( files )
+   #   et.terminate()
+   #   meta = self._removeErrors( a )
+   #   return meta
 
    def files( self ):
       #f = []
@@ -47,12 +47,24 @@ class fileManipulation(object):
          for one in self.conf["ignoreDirs"]:
             if one in subFolders:
                subFolders.remove( one )
+         
          for fileName in files:
             absolute_path = "{}/{}".format(root, fileName)
             self.logger.debug(absolute_path)
+            
             with open(absolute_path, 'rb') as image_file:
-               my_image = Image(image_file)
-               print(my_image)
+               current_image = Image(image_file)
+               if current_image.has_exif:
+                  file_extension = fileName.split('.')[-1].upper()
+                  print("Abs Path: {}, Extension: {}, Date: {}, Digitized Date: {}".format(absolute_path,
+                                                                                           file_extension,
+                                                                                           current_image.datetime_original,
+                                                                                           current_image.datetime_digitized))
+                  # pprint(dir(current_image))
+                  # print(current_image.datetime_original)
+                  
+               else:
+                  self.logger.error("No EXIF data available for: {}".format(absolute_path))
 
 #      meta = self.getMeta( f )
 #      self.identifyType( meta )
