@@ -1,12 +1,10 @@
-#!/usr/bin/env python
 
 import logging
 import sys
 
 from pprint       import pprint
 
-sys.path.append( './lib' )
-from fileManip    import fileManipulation
+from .fileManip    import fileManipulation
 
 class fileManipulation_jpeg( fileManipulation ):
 

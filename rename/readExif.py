@@ -29,16 +29,7 @@ class readExifData(object):
       d = self.conf["rootDir"] + "/" + self.conf["outDir"] + "/" + self.conf["unknown"]
       return d
 
-   #def getMeta( self, files ):
-   #   et = ExifTool()
-   #   et.start()
-   #   a = et.get_metadata_batch( files )
-   #   et.terminate()
-   #   meta = self._removeErrors( a )
-   #   return meta
-
    def files( self ):
-      #f = []
       if not os.path.exists( self.conf["rootDir"] ):
          self.logger.error("Root dir doesn't seem to be vaild")
          sys.exit( 1 )
@@ -56,10 +47,12 @@ class readExifData(object):
                current_image = Image(image_file)
                if current_image.has_exif:
                   file_extension = fileName.split('.')[-1].upper()
-                  print("Abs Path: {}, Extension: {}, Date: {}, Digitized Date: {}".format(absolute_path,
-                                                                                           file_extension,
-                                                                                           current_image.datetime_original,
-                                                                                           current_image.datetime_digitized))
+                  #print("Absolute Path: {}, Extension: {}, Date: {}, Digitized Date: {}".format(absolute_path,
+                  #                                                                              file_extension,
+                  #                                                                              current_image.datetime_original,
+                  #                                                                              current_image.datetime_digitized))
+
+                  self.identifyType( absolute_path, file_extension, current_image.datetime_original)
                   # pprint(dir(current_image))
                   # print(current_image.datetime_original)
                   
@@ -124,7 +117,14 @@ class readExifData(object):
       self.createOutDirs( data )
       self.copyFile( data )
 
-   def identifyType( self, meta ):
+   def identifyType(self, path, extension, date):
+      print("Hi Chuy!! {} {} {}".format(path, extension, date))
+
+      if extension == "JPG" or extension == "JPEG":
+         from .fileManip_jpg import fileManipulation_jpeg 
+         fileManipulation_jpeg( jpeg, self.conf, self.logName )
+
+   def identifyType2( self, meta ):
 #      pprint( meta )
       jpeg = []
       mp4 = []
