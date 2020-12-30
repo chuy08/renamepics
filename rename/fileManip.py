@@ -5,7 +5,7 @@ import shutil
 import sys
 
 from exif import Image
-#from pprint       import pprint
+from pprint import pprint
 
 class fileManipulation(object):
 
@@ -13,7 +13,6 @@ class fileManipulation(object):
       self.logger = logging.getLogger(__name__)
       self.conf = conf 
       self.outdir = self.conf["outDir"]
-      #self.rootdir = self.conf["rootDir"]
       self.unknown = self.conf["unknown"]
 
    def _removeErrors( self, meta ):
@@ -39,22 +38,25 @@ class fileManipulation(object):
       return meta
 
    def files( self ):
-      f = []
+      #f = []
       if not os.path.exists( self.conf["rootDir"] ):
          self.logger.error("Root dir doesn't seem to be vaild")
          sys.exit( 1 )
 
-#      for root, subFolders, files in os.walk( self.rootdir ):
-#         for one in self.conf["ignoreDirs"]:
-#            if one in subFolders:
-#               subFolders.remove( one )
-#         for fileName in files:
-#            f.append( os.path.join( root, fileName ) )
-#      pprint( f )
+      for root, subFolders, files in os.walk( self.conf["rootDir"] ):
+         for one in self.conf["ignoreDirs"]:
+            if one in subFolders:
+               subFolders.remove( one )
+         for fileName in files:
+            absolute_path = "{}/{}".format(root, fileName)
+            self.logger.debug(absolute_path)
+            with open(absolute_path, 'rb') as image_file:
+               my_image = Image(image_file)
+               print(my_image)
 
 #      meta = self.getMeta( f )
 #      self.identifyType( meta )
-#      return meta 
+#      return meta
 
    def createOutDirs( self, dir ):
       for one in dir:

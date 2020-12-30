@@ -6,7 +6,7 @@
       "unknown": "unknown",
       // Where we'll put music files
       "musicDir": "Music",
-      "rootDir": "samples/",
+      "rootDir": "samples",
       // Quicktime uses UTC time, I convert it to the timezone listed here
       // For valid timezones lookup pytz python package
       "timeZone": "US/Pacific",
