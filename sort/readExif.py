@@ -1,11 +1,13 @@
 
+import importlib
 import logging
 import os
 import shutil
 import sys
 
-from exif import Image
 from pprint import pprint
+
+from .exiftool import ExifTool
 
 IGNORE_DIRS = [ ".thumbnails", "thumbnails" ]
 
@@ -84,6 +86,14 @@ class readExifData(object):
       self.createOutDirs( data )
       self.copyFile( data )
 
+   def getMeta(self, file):
+      et = ExifTool()
+      et.start()
+      exif_data = et.get_metadata(file)
+      et.terminate()
+      self.logger.debug("Exif information: {}".format(exif_data))
+      return exif_data
+
    def readFiles( self ):
       if not os.path.exists( self.args.source ):
          self.logger.error("Root dir doesn't seem to be vaild")
@@ -97,22 +107,16 @@ class readExifData(object):
          for fileName in files:
             absolute_path = "{}/{}".format(root, fileName)
             self.logger.debug(absolute_path)
+            exif_data = self.getMeta(absolute_path)
             
-            with open(absolute_path, 'rb') as image_file:
-               current_image = Image(image_file)
-               if current_image.has_exif:
-                  file_extension = fileName.split('.')[-1].upper()
-                  self.logger.debug("Absolute Path: {}, Extension: {}, Date: {}, Digitized Date: {}".format(absolute_path,
-                                                                                                            file_extension,
-                                                                                                            current_image.datetime_original,
-                                                                                                            current_image.datetime_digitized))
-
-                  self.identifyType( absolute_path, file_extension, current_image.datetime_original)
-               else:
-                  self.logger.error("No EXIF data available for: {}".format(absolute_path))
-
-   def identifyType(self, path, extension, exif_date):
-      if extension == "JPG" or extension == "JPEG":
-         from .sort_jpg import sort_jpg
-         s = sort_jpg(self.args, path, extension, exif_date)
-         s.main()
+            module_name = "sort.sort_{}".format(exif_data['File:FileType'])
+            self.logger.info("Importing module: {}".format(module_name))
+            
+            i = None
+            try:
+               i = importlib.import_module(module_name)
+            except ImportError as err:
+               self.logger.error('File Name: {} of FileType: {} caused an error: {}'.format(fileName, exif_data['File:FileType'], err))
+            
+            s = i.sort(self.args, exif_data)
+            s.main()
