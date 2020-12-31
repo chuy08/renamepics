@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 #
 # Internal libraries
 #
-from rename.__init__ import __version__
+from sort.__init__ import __version__
 
 try:
     with open(path.join(path.dirname(__file__), 'README.md')) as f:
@@ -21,7 +21,7 @@ except Exception:
     long_description = None
 
 # Pull the name and version from our application object
-NAME = 'renamePics'
+NAME = 'sortpics'
 
 VERSION = __version__
 
@@ -46,7 +46,7 @@ setup(
     tests_require=[],
     entry_points={
         'console_scripts': [
-            '{name} = rename.cli:main'.format(name=NAME),
+            '{name} = sort.cli:main'.format(name=NAME),
         ]
     },
     python_requires='~=3.8',
