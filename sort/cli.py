@@ -12,8 +12,11 @@ def main():
 
    parser.add_argument('--debug',
                         help="Enable Debug",
-                        action='store_true',
-                        default=False)
+                        action='store_true')
+
+   parser.add_argument('--dry-run',
+                        help="Show me what will happen if I run this for realsies",
+                        action='store_false')
 
    parser.add_argument('--output',
                         help="Output Directory (debugging only)",
