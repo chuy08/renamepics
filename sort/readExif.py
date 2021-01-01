@@ -110,13 +110,14 @@ class readExifData(object):
             exif_data = self.getMeta(absolute_path)
             
             module_name = "sort.sort_{}".format(exif_data['File:FileType'])
-            self.logger.info("Importing module: {}".format(module_name))
+            self.logger.debug("Importing module: {}".format(module_name))
             
             i = None
             try:
                i = importlib.import_module(module_name)
             except ImportError as err:
-               self.logger.error('File Name: {} of FileType: {} caused an error: {}'.format(fileName, exif_data['File:FileType'], err))
+               self.logger.error('File Name: {} of FileType: {} caused error: {}'.format(fileName, exif_data['File:FileType'], err))
             
-            s = i.sort(self.args, exif_data)
-            s.main()
+            if i:
+               s = i.sort(self.args, exif_data)
+               s.main()
