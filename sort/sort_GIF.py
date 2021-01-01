@@ -1,12 +1,10 @@
 
 import logging
+import os
 import sys
-
-import pprint
+import shutil
 
 from .readExif import readExifData
-
-pp = pprint.PrettyPrinter(indent=4)
 
 class sort(readExifData):
 
@@ -17,6 +15,11 @@ class sort(readExifData):
       self.exif_data = exif_data
 
    def main(self):
-      pp.pprint(self.exif_data)
       create_date = self.get_create_date(self.exif_data)
-      print("Chuy Create Date: {}".format(create_date))
+      dest_dir, dest_file = self.parse_date(create_date, self.exif_data['File:FileName'])
+
+      if self.args.dry_run:
+         os.makedirs(dest_dir, exist_ok=True)
+         shutil.copyfile(self.exif_data['SourceFile'], dest_file)
+      
+      self.logger.info("Copied File: {} into {}".format(self.exif_data['SourceFile'], dest_dir))

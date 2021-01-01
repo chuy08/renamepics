@@ -15,20 +15,7 @@ class sort( readExifData ):
 
    def main(self):
       create_date = self.get_create_date(self.exif_data)
-      
-      splitDate = create_date.split(" ")
-      date = splitDate[0]
-      # time = splitDate[-1]
-
-      date_parts = date.split(":")
-      date_parts.insert(0, self.args.output)
-      
-      dest_dir = ("/".join(date_parts))
-      self.logger.debug("Sorted destination: {}".format(dest_dir))
-
-      date_parts.insert(len(date_parts), self.exif_data['File:FileName'])
-      dest_file = ("/".join(date_parts))
-      self.logger.debug("Sorted destination file: {}".format(dest_file))
+      dest_dir, dest_file = self.parse_date(create_date, self.exif_data['File:FileName'])
 
       if self.args.dry_run:
          os.makedirs(dest_dir, exist_ok=True)

@@ -36,6 +36,23 @@ class readExifData(object):
       
       return create_date
 
+   def parse_date(self, date, filename):
+      splitDate = date.split(" ")
+      date = splitDate[0]
+      # time = splitDate[-1]
+
+      date_parts = date.split(":")
+      date_parts.insert(0, self.args.output)
+      
+      dest_dir = ("/".join(date_parts))
+      self.logger.debug("Sorted destination: {}".format(dest_dir))
+
+      date_parts.insert(len(date_parts), filename)
+      dest_file = ("/".join(date_parts))
+      self.logger.debug("Sorted destination file: {}".format(dest_file))
+
+      return dest_dir, dest_file
+
    # Entrypoint
    def readFiles(self):
       if not os.path.exists( self.args.source ):
